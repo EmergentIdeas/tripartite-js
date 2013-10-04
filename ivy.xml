@@ -1,0 +1,32 @@
+<ivy-module version="2.0">
+	<!-- 
+		Below is a basic template to set up the dependencies and publication targets. You must change 
+		the following strings:
+		
+		com.emergentideas
+		tripartate-js
+		
+		Change them to your organization name and the name of this plugin
+	 -->
+    <info organisation="com.emergentideas" module="tripartate-js"/>
+    <configurations defaultconfmapping="build->*;deployment->default;test->default">
+    	<conf name="build" />
+    	<conf name="deployment" />
+    	<conf name="appdep" />
+    	<conf name="test" />
+    	<conf name="sources" />
+    	<conf name="empty" />
+    </configurations>
+    <publications>
+    	<artifact name="tripartate-js" type="jar" conf="appdep" />
+    	<artifact name="tripartate-js-sources" type="source" ext="jar" conf="sources"/>
+    </publications>
+    <dependencies>
+    	<dependency org="com.emergentideas" name="webhandle" rev="[1.0.0.8,)" conf="build" />	
+    	
+    	<!-- For testing code -->
+		<dependency org="org.mockito" name="mockito-all" rev="1.9.5-rc1" conf="test"/>
+		<dependency org="junit" name="junit" rev="4.10" conf="test" />
+    	
+    </dependencies>
+</ivy-module>

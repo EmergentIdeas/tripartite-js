@@ -1,0 +1,69 @@
+<html>
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script type="tripartate" src="test1.tripartate" id="tp1" ></script>
+	<script type="text/javascript" src="../resources/js/tripartate.js"></script>
+
+</head>
+<body>
+	<div id="i1">
+	
+	</div>
+
+
+	<script type="text/javascript">
+	
+	
+	Tripartate.templates.upper = function(thedata) {
+		return ('' + thedata).toUpperCase();
+	}
+	var one = new Tripartate.ActiveElement(null, 'firstName', null);
+	var two = new Tripartate.ActiveElement('lastName', 'firstName', null);
+	var three = new Tripartate.ActiveElement('lastName', 'firstName', 'upper');
+		var d1 = {
+				firstName: 'Paul',
+				lastName: 'Kolz'
+		}
+		
+		var d2 = {
+				firstName: 'Dan'
+		}
+		
+		var d3 = [ d1, d2];
+		
+		console.log(one.evaluateDataSelectorExpression(d1));
+		console.log(one.run(d1));
+		console.log(two.run(d1));
+		console.log(two.run(d2));
+		console.log('uppercase: ' + three.run(d1));
+		
+		var t1 = new Tripartate.SimpleTemplate(null, 'firstName', null);
+		Tripartate.templates.t1 = t1;
+		console.log(t1(d1));
+		
+		var t2 = new Tripartate.SimpleTemplate(null, '$this', 't1');
+		
+		console.log(t2(d3));
+		
+		
+		Tripartate.parseTemplate('hello__there__people');
+		
+		
+		var t3 = Tripartate.addTemplate('t3', 'First name: __firstName__');
+		console.log(t3(d1));
+		
+		var t4 = Tripartate.addTemplate('t4', 'Everybody: __$this::t3__');
+		console.log(t4(d3));
+		
+		var t5 = Tripartate.addTemplate('t5', 'Everybody: __false??$this::t3__');
+		console.log(t5(d3));
+		
+		Tripartate.addTemplate('lower', function(value) {return value.toLowerCase();});
+		
+		var t6 = Tripartate.addTemplate('t6', 'First name: __firstName::lower__');
+		console.log(t6(d1));
+		
+	</script>
+</body>
+
+</html>
