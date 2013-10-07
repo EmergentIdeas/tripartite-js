@@ -30,22 +30,22 @@
 		
 		var d3 = [ d1, d2];
 		
-		console.log(one.evaluateDataSelectorExpression(d1));
+		console.log(one.edse(d1));
 		console.log(one.run(d1));
 		console.log(two.run(d1));
 		console.log(two.run(d2));
 		console.log('uppercase: ' + three.run(d1));
 		
-		var t1 = new Tripartite.SimpleTemplate(null, 'firstName', null);
+		var t1 = new Tripartite.st(null, 'firstName', null);
 		Tripartite.templates.t1 = t1;
 		console.log(t1(d1));
 		
-		var t2 = new Tripartite.SimpleTemplate(null, '$this', 't1');
+		var t2 = new Tripartite.st(null, '$this', 't1');
 		
 		console.log(t2(d3));
 		
 		
-		Tripartite.parseTemplate('hello__there__people');
+		Tripartite.pt('hello__there__people');
 		
 		
 		var t3 = Tripartite.addTemplate('t3', 'First name: __firstName__');
