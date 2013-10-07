@@ -1,0 +1,84 @@
+<html>
+<head>
+	<link href="test.css" rel="stylesheet" type="text/css" id="s1" />
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script type="text/tripartite" id="tp1" >
+	##person##
+	<div class="person">
+		<div class="bio">
+			Name: __lastName::upperCase__, __firstName__ <br/>
+			Birthplace: __birthplace__ <br/>
+			__birthdate??'Birthdate:'__ __birthdate__
+		</div>
+
+		__contactInfo::contactInfoForBio__
+
+		<div class="clear"></div>
+	</div>
+
+	##contactInfoForBio##
+	<div class="contact">
+		Location: __address__ <br/>
+		Com code: __comCode__
+	</div>
+
+	##people##
+	__$this::person__
+	</script>
+	<script type="text/javascript" src="../resources/js/tripartite.js"></script>
+	<script type="text/javascript" >
+	
+	peopleInfo = [
+	          {
+	        	firstName: 'John',
+	        	lastName: 'Picard',
+	        	birthplace: 'France',
+	        	contactInfo: {
+	        		comCode: '89123421560',
+	        		address: 'Space, the final frontier'
+	        	}
+	          },
+	          {
+		        	firstName: 'Jaimie',
+		        	lastName: 'Kirk',
+		        	birthdate: 'March 22, 2233',
+		        	birthplace: 'Iowa',
+		        	contactInfo: {
+		        		comCode: '2902354913',
+		        		address: "Second star to the right and straight on 'til morning."
+		        	}
+		      },
+	          {
+		        	firstName: 'Harry',
+		        	lastName: 'Riker',
+		        	birthplace: 'Eastern US',
+		        	contactInfo: {
+		        		comCode: '58136897316',
+		        		address: "Always in somebody's shadow"
+		        	}
+		       }
+		       
+	          
+	          ];
+	
+		Tripartite.parseTemplateScript($('#tp1').text());
+		Tripartite.addTemplate("upperCase", function(thetext) {
+			return thetext.toUpperCase();
+		});
+	</script>
+</head>
+<body>
+	<div id="i1">
+	
+	</div>
+
+
+	<script type="text/javascript">
+	
+	
+	$('#i1').html(people(peopleInfo));
+		
+	</script>
+</body>
+
+</html>

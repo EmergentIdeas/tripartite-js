@@ -1,19 +1,27 @@
-Tripartate = {
+Tripartite = {
 		templates: {
 			defaultTemplate: function(thedata) {
 				return '' + thedata;
 			}
-		}
+		},
+		constants: {
+			templateBoundary: '__',
+			templateNameBoundary: '##'
+		},
+		// This object (if set) will receive the template functions parsed from a script
+		// I want to be able to call my templates as global functions, so I've set it
+		// to be the window object
+		secondaryTemplateFunctionObject: window
 };
 
-Tripartate.SimpleTemplate = function(conditional, data, handling) {
-	var el = new Tripartate.ActiveElement(conditional, data, handling);
+Tripartite.SimpleTemplate = function(conditional, data, handling) {
+	var el = new Tripartite.ActiveElement(conditional, data, handling);
 	return function(currentContext) {
 		return el.run(currentContext);
 		};
 };
 
-Tripartate.ActiveElement = function(conditional, data, handling) {
+Tripartite.ActiveElement = function(conditional, data, handling) {
 	this.conditionalExpression = conditional;
 	this.dataSelectorExpression = data;
 	if(handling) {
@@ -26,7 +34,7 @@ Tripartate.ActiveElement = function(conditional, data, handling) {
 	this.evaluatedData = null;
 };
 
-Tripartate.ActiveElement.prototype.run = function(currentContext) {
+Tripartite.ActiveElement.prototype.run = function(currentContext) {
 	var runTemplate = false;
 	this.evaluatedData = this.evaluateDataSelectorExpression(currentContext);
 	if(this.conditionalExpression) {
@@ -57,18 +65,18 @@ Tripartate.ActiveElement.prototype.run = function(currentContext) {
 		if(this.evaluatedData instanceof Array) {
 			var result = '';
 			for(var i = 0; i < this.evaluatedData.length; i++) {
-				result += Tripartate.templates[actualTemplate](this.evaluatedData[i]);
+				result += Tripartite.templates[actualTemplate](this.evaluatedData[i]);
 			}
 			return result;
 		}
 		else {
-			return Tripartate.templates[actualTemplate](this.evaluatedData);
+			return Tripartite.templates[actualTemplate](this.evaluatedData);
 		}
 	}
 	return '';
 };
 
-Tripartate.ActiveElement.prototype.evaluateDataSelectorExpression = function(currentContext) {
+Tripartite.ActiveElement.prototype.evaluateDataSelectorExpression = function(currentContext) {
 	if(!this.dataSelectorExpression) {
 		return null;
 	}
@@ -78,7 +86,7 @@ Tripartate.ActiveElement.prototype.evaluateDataSelectorExpression = function(cur
 	return this.evaluateInContext(currentContext, this.dataSelectorExpression);
 };
 
-Tripartate.ActiveElement.prototype.evaluateInContext = function(currentContext, expression) {
+Tripartite.ActiveElement.prototype.evaluateInContext = function(currentContext, expression) {
 	with (currentContext) {
 		try {
 			return eval(expression);
@@ -88,21 +96,41 @@ Tripartate.ActiveElement.prototype.evaluateInContext = function(currentContext, 
 	}
 };
 
-Tripartate.addTemplate = function(templateName, theTemplate) {
+Tripartite.addTemplate = function(templateName, theTemplate) {
 	if(typeof theTemplate !== 'function') {
-		theTemplate = Tripartate.parseTemplate(theTemplate);
+		theTemplate = Tripartite.parseTemplate(theTemplate);
 	}
-	Tripartate.templates[templateName] = theTemplate;
+	Tripartite.templates[templateName] = theTemplate;
 	return theTemplate;
 };
 
-Tripartate.parseTemplate = function(thetext) {
-	var tokens = Tripartate.tokenizeTemplate(thetext);
+Tripartite.parseTemplateScript = function(thetext) {
+	var tokens = Tripartite.tokenizeTemplateScript(thetext);
+	var currentTemplateName = null;
+	for(var i = 0; i < tokens.length; i++) {
+		var token = tokens[i];
+		if(token.active) {
+			currentTemplateName = token.content;
+		}
+		else {
+			if(currentTemplateName) {
+				var template = Tripartite.addTemplate(currentTemplateName, token.content);
+				if(Tripartite.secondaryTemplateFunctionObject) {
+					Tripartite.secondaryTemplateFunctionObject[currentTemplateName] = template;
+				}
+				currentTemplateName = null;
+			}
+		}
+	}
+}
+
+Tripartite.parseTemplate = function(thetext) {
+	var tokens = Tripartite.tokenizeTemplate(thetext);
 	var parts = [];
 	for(var i = 0; i < tokens.length; i++) {
 		var token = tokens[i];
 		if(token.active) {
-			parts.push(Tripartate.tokenizeActivePart(token.content));
+			parts.push(Tripartite.tokenizeActivePart(token.content));
 		}
 		else {
 			if(token.content) {
@@ -125,7 +153,7 @@ Tripartate.parseTemplate = function(thetext) {
 	};
 };
 
-Tripartate.tokenizeActivePart = function(activeText) {
+Tripartite.tokenizeActivePart = function(activeText) {
 	var con = null;
 	var dat = null;
 	var han = null;
@@ -147,10 +175,18 @@ Tripartate.tokenizeActivePart = function(activeText) {
 	else {
 		dat = activeText.substring(condIndex);
 	}
-	return new Tripartate.SimpleTemplate(con, dat, han);
+	return new Tripartite.SimpleTemplate(con, dat, han);
 }
 
-Tripartate.tokenizeTemplate = function(thetext) {
+Tripartite.tokenizeTemplate = function(thetext) {
+	return Tripartite.tokenizeActiveInactiveBlocks(thetext, Tripartite.constants.templateBoundary);
+}
+
+Tripartite.tokenizeTemplateScript = function(thetext) {
+	return Tripartite.tokenizeActiveInactiveBlocks(thetext, Tripartite.constants.templateNameBoundary);
+}
+
+Tripartite.tokenizeActiveInactiveBlocks = function(thetext, activeRegionBoundary) {
 	var wholeLength = thetext.length;
 	var curPos = 0;
 	var inActive = false;
@@ -158,7 +194,7 @@ Tripartate.tokenizeTemplate = function(thetext) {
 	var tokens = [];
 	
 	while(curPos < wholeLength) {
-		var index = thetext.indexOf("__", curPos);
+		var index = thetext.indexOf(activeRegionBoundary, curPos);
 		if(index == -1) {
 			index = wholeLength;
 		}
@@ -170,5 +206,7 @@ Tripartate.tokenizeTemplate = function(thetext) {
 	
 	return tokens;
 }
+
+
 
 

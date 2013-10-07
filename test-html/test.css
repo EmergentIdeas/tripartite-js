@@ -1,0 +1,19 @@
+.person {
+	background-color: #EEEEEE;
+	margin: 1em;
+	width: 500px;
+	padding: 1em;
+}
+
+.bio {
+	float: left;
+}
+
+.contact {
+	float: right;
+	width: 300px;
+}
+
+.clear {
+	clear: both;
+}
