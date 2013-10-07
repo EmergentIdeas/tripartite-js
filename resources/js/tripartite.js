@@ -14,199 +14,228 @@ Tripartite = {
 		secondaryTemplateFunctionObject: window
 };
 
-Tripartite.SimpleTemplate = function(conditional, data, handling) {
-	var el = new Tripartite.ActiveElement(conditional, data, handling);
-	return function(currentContext) {
-		return el.run(currentContext);
+(function(t) {
+var st = t.secondaryTemplateFunctionObject;
+
+t.addTemplate = function(name, template) {
+	if(typeof template !== 'function') {
+		template = t.pt(template);
+	}
+	t.templates[name] = template;
+	return template;
+};
+
+t.parseTemplateScript = function(tx) {
+	var tks = t.tts(tx);
+	/* current template name */
+	var ctn = null;
+	for(var i = 0; i < tks.length; i++) {
+		var token = tks[i];
+		if(token.active) {
+			ctn = token.content;
+		}
+		else {
+			if(ctn) {
+				var template = t.addTemplate(ctn, token.content);
+				if(st) {
+					st[ctn] = template;
+				}
+				ctn = null;
+			}
+		}
+	}
+}
+
+t.ActiveElement = function(/* the conditional */cd, data, hd) {
+	/* assign the conditional expression */
+	this.ce = cd;
+	/* assign the data selector expression */
+	this.dse = data;
+	
+	/* assign the hd expression */
+	if(hd) {
+		this.he = hd;
+	}
+	else {
+		this.he = 'defaultTemplate';
+	}
+	
+	/* evaluated data */
+	this.ed = null;
+};
+
+var ae = t.ActiveElement;
+
+/* SimpleTemplate */
+t.st = function(/* conditional expression */ cd, data, /* handling expression */ hd) {
+	var el = new ae(cd, data, hd);
+	return function(cc) {
+		return el.run(cc);
 		};
 };
 
-Tripartite.ActiveElement = function(conditional, data, handling) {
-	this.conditionalExpression = conditional;
-	this.dataSelectorExpression = data;
-	if(handling) {
-		this.handlingExpression = handling;
-	}
-	else {
-		this.handlingExpression = 'defaultTemplate';
-	}
-	
-	this.evaluatedData = null;
-};
 
-Tripartite.ActiveElement.prototype.run = function(currentContext) {
-	var runTemplate = false;
-	this.evaluatedData = this.evaluateDataSelectorExpression(currentContext);
-	if(this.conditionalExpression) {
-		runTemplate = this.evaluateInContext(currentContext, this.conditionalExpression);
+ae.prototype.run = function(/* current context */cc) {
+	/* run template */
+	var rt = false;
+	/* evaluated data */
+	this.ed = this.edse(cc);
+	if(this.ce) {
+		rt = this.eic(cc, this.ce);
 	}
 	else {
-		if(this.evaluatedData instanceof Array) {
-			if(this.evaluatedData.length > 0) {
-				runTemplate = true;
+		if(this.ed instanceof Array) {
+			if(this.ed.length > 0) {
+				rt = true;
 			}
 		}
 		else {
-			if(this.evaluatedData) {
-				runTemplate = true;
+			if(this.ed) {
+				rt = true;
 			}
 		}
 	}
 	
-	var actualTemplate = this.handlingExpression;
-	if(actualTemplate.charAt(0) == '$') {
-		actualTemplate = this.evaluateInContext(currentContext, actualTemplate.substring(1));
+	var at = this.he;
+	if(at.charAt(0) == '$') {
+		at = this.eic(cc, at.substring(1));
 	}
-	if(!actualTemplate) {
-		actualTemplate = 'defaultTemplate';
+	if(!at) {
+		at = 'defaultTemplate';
 	}
 	
-	if(runTemplate) {
-		if(this.evaluatedData instanceof Array) {
-			var result = '';
-			for(var i = 0; i < this.evaluatedData.length; i++) {
-				result += Tripartite.templates[actualTemplate](this.evaluatedData[i]);
+	if(rt) {
+		if(this.ed instanceof Array) {
+			var r = '';
+			for(var i = 0; i < this.ed.length; i++) {
+				r += t.templates[at](this.ed[i]);
 			}
-			return result;
+			return r;
 		}
 		else {
-			return Tripartite.templates[actualTemplate](this.evaluatedData);
+			return t.templates[at](this.ed);
 		}
 	}
 	return '';
 };
 
-Tripartite.ActiveElement.prototype.evaluateDataSelectorExpression = function(currentContext) {
-	if(!this.dataSelectorExpression) {
+/* evaluate data selector expression */
+ae.prototype.edse = function(cc) {
+	if(!this.dse) {
 		return null;
 	}
-	if(this.dataSelectorExpression === '$this') {
-		return currentContext;
+	if(this.dse === '$this') {
+		return cc;
 	}
-	return this.evaluateInContext(currentContext, this.dataSelectorExpression);
+	return this.eic(cc, this.dse);
 };
 
-Tripartite.ActiveElement.prototype.evaluateInContext = function(currentContext, expression) {
-	with (currentContext) {
+/* evaluate in context */
+ae.prototype.eic = function(cc, ex) {
+	with (cc) {
 		try {
-			return eval(expression);
+			return eval(ex);
 		} catch(e) {
 			return null;
 		}
 	}
 };
 
-Tripartite.addTemplate = function(templateName, theTemplate) {
-	if(typeof theTemplate !== 'function') {
-		theTemplate = Tripartite.parseTemplate(theTemplate);
-	}
-	Tripartite.templates[templateName] = theTemplate;
-	return theTemplate;
-};
-
-Tripartite.parseTemplateScript = function(thetext) {
-	var tokens = Tripartite.tokenizeTemplateScript(thetext);
-	var currentTemplateName = null;
-	for(var i = 0; i < tokens.length; i++) {
-		var token = tokens[i];
-		if(token.active) {
-			currentTemplateName = token.content;
+/* parse template */
+t.pt = function(tx) {
+	var tks = t.tt(tx);
+	var pt = [];
+	for(var i = 0; i < tks.length; i++) {
+		var tk = tks[i];
+		if(tk.active) {
+			pt.push(t.tap(tk.content));
 		}
 		else {
-			if(currentTemplateName) {
-				var template = Tripartite.addTemplate(currentTemplateName, token.content);
-				if(Tripartite.secondaryTemplateFunctionObject) {
-					Tripartite.secondaryTemplateFunctionObject[currentTemplateName] = template;
-				}
-				currentTemplateName = null;
-			}
-		}
-	}
-}
-
-Tripartite.parseTemplate = function(thetext) {
-	var tokens = Tripartite.tokenizeTemplate(thetext);
-	var parts = [];
-	for(var i = 0; i < tokens.length; i++) {
-		var token = tokens[i];
-		if(token.active) {
-			parts.push(Tripartite.tokenizeActivePart(token.content));
-		}
-		else {
-			if(token.content) {
-				parts.push(token.content);
+			if(tk.content) {
+				pt.push(tk.content);
 			}
 		}
 	}
 	
-	return function(currentContext) {
-		var result = '';
-		for(var i = 0; i < parts.length; i++) {
-			if(typeof parts[i] === 'string') {
-				result += parts[i];
+	return function(cc) {
+		var r = '';
+		for(var i = 0; i < pt.length; i++) {
+			if(typeof pt[i] === 'string') {
+				r += pt[i];
 			}
 			else {
-				result += parts[i](currentContext);
+				r += pt[i](cc);
 			}
 		}
-		return result;
+		return r;
 	};
 };
 
-Tripartite.tokenizeActivePart = function(activeText) {
+/* tokenize active part */
+t.tap = function(tx) {
 	var con = null;
 	var dat = null;
 	var han = null;
 	
-	var condIndex = activeText.indexOf('??');
-	if(condIndex > -1) {
-		con = activeText.substring(0, condIndex);
-		condIndex += 2;
+	/* condition index */
+	var ci = tx.indexOf('??');
+	if(ci > -1) {
+		con = tx.substring(0, ci);
+		ci += 2;
 	}
 	else {
-		condIndex = 0;
+		ci = 0;
 	}
 	
-	var handIndex = activeText.indexOf('::');
-	if(handIndex > -1) {
-		dat = activeText.substring(condIndex, handIndex);
-		han = activeText.substring(handIndex + 2);
+	/* handler index */
+	var hi = tx.indexOf('::');
+	if(hi > -1) {
+		dat = tx.substring(ci, hi);
+		han = tx.substring(hi + 2);
 	}
 	else {
-		dat = activeText.substring(condIndex);
+		dat = tx.substring(ci);
 	}
-	return new Tripartite.SimpleTemplate(con, dat, han);
+	return new t.st(con, dat, han);
 }
 
-Tripartite.tokenizeTemplate = function(thetext) {
-	return Tripartite.tokenizeActiveInactiveBlocks(thetext, Tripartite.constants.templateBoundary);
+/* tokenize template */
+t.tt = function(tx) {
+	return t.taib(tx, t.constants.templateBoundary);
 }
 
-Tripartite.tokenizeTemplateScript = function(thetext) {
-	return Tripartite.tokenizeActiveInactiveBlocks(thetext, Tripartite.constants.templateNameBoundary);
+/** tokenize template script */
+t.tts = function(tx) {
+	return t.taib(tx, t.constants.templateNameBoundary);
 }
 
-Tripartite.tokenizeActiveInactiveBlocks = function(thetext, activeRegionBoundary) {
-	var wholeLength = thetext.length;
-	var curPos = 0;
-	var inActive = false;
+/* tokenize active and inactive blocks */
+t.taib = function(tx, /*Active Region Boundary */ bnd) {
+	/* whole length */
+	var l = tx.length;
 	
-	var tokens = [];
+	/* current position */
+	var p = 0;
 	
-	while(curPos < wholeLength) {
-		var index = thetext.indexOf(activeRegionBoundary, curPos);
-		if(index == -1) {
-			index = wholeLength;
+	/* are we in an active region */
+	var act = false;
+	
+	var tks = [];
+	
+	while(p < l) {
+		var i = tx.indexOf(bnd, p);
+		if(i == -1) {
+			i = l;
 		}
-		var token = { active: inActive, content: thetext.substring(curPos, index)};
-		tokens.push(token);
-		curPos = index + 2;
-		inActive = !inActive;
+		var tk = { active: act, content: tx.substring(p, i)};
+		tks.push(tk);
+		p = i + 2;
+		act = !act;
 	}
 	
-	return tokens;
+	return tks;
 }
-
+})(Tripartite);
 
 
 
