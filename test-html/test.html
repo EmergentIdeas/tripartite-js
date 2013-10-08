@@ -1,0 +1,115 @@
+<html>
+<head>
+	<script>  
+		  
+		function assert( outcome, description ) {  
+			var output = document.getElementById('output');  
+		    var li = document.createElement('li');  
+		    li.className = outcome ? 'pass' : 'fail';  
+		    li.appendChild( document.createTextNode( description ) );  
+		      
+		    output.appendChild(li);  
+		};  
+	</script>  
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script type="text/tripartite" id="tp1" >
+	##firstNameOnly##
+	__firstName__
+	##firstNameUpper##
+	__firstName::upperCase__
+	##printDollarThis##
+	__$this__
+	##printDollarThisWithA##
+	a:__$this__
+	##printThis##
+	__this__
+	##nameIfBirthdate##
+	__birthdate??firstName__
+	##threeParts##
+	__birthdate??firstName::printDollarThisWithA__
+	##templateB##
+	b
+	##templateC##
+	c
+	##callATemplate##
+	__this::$templateName__
+	</script>
+	<script type="text/javascript" src="../resources/js/tripartite.js"></script>
+	<script type="text/javascript" >
+	
+	john = {
+	        	firstName: 'John',
+	        	lastName: 'Picard',
+	        	birthplace: 'France',
+	        	contactInfo: {
+	        		comCode: '89123421560',
+	        		address: 'Space, the final frontier'
+	        	}
+	          };
+	jaimie = {
+		        	firstName: 'Jaimie',
+		        	lastName: 'Kirk',
+		        	birthdate: 'March 22, 2233',
+		        	birthplace: 'Iowa',
+		        	contactInfo: {
+		        		comCode: '2902354913',
+		        		address: "Second star to the right and straight on 'til morning."
+		        	}
+		      };
+	harry =   {
+		        	firstName: 'Harry',
+		        	lastName: 'Riker',
+		        	birthplace: 'Eastern US',
+		        	contactInfo: {
+		        		comCode: '58136897316',
+		        		address: "Always in somebody's shadow"
+		        	}
+		       };
+		Tripartite.parseTemplateScript($('#tp1').text());
+		Tripartite.addTemplate("upperCase", function(thetext) {
+			return thetext.toUpperCase();
+		});
+	</script>
+	<style type="text/css">  
+        .pass:before {  
+            content: 'PASS: ';  
+            color:  blue;  
+            font-weight: bold;  
+        }  
+          
+        .fail:before {  
+            content: 'FAIL: ';  
+            color: red;  
+            font-weight: bold;  
+              
+        }  
+    </style>  
+</head>
+<body>
+	<ul id="output">
+	</ul>
+
+
+	<script type="text/javascript">
+	assert(firstNameOnly(john).trim() == 'John', "One named piece of information.");
+	assert(firstNameUpper(john).trim() == 'JOHN', "One named piece of information with function added as template.")
+	assert(printDollarThis('me').trim() == 'me', "Using the $this content.");
+	assert(printThis('me').trim() == 'me', "Using the this content.");
+	assert(printDollarThisWithA('me').trim() == 'a:me', "Using $this with a template.");
+	assert(nameIfBirthdate(jaimie).trim() == 'Jaimie', "Data if a piece of named data exists.");
+	assert(nameIfBirthdate(john).trim() == '', "Blank if a piece of named data doesn't exist.");
+	assert(threeParts(jaimie).trim() == 'a:Jaimie', "Data if a piece of named data exists processed by a template.")
+	assert(threeParts(john).trim() == '', "Blank if a piece of named data doesn't exist but a template is specified.");
+	assert(callATemplate({templateName: 'templateB'}).trim() == 'b', "(1) Selecting a template to call with a data in the object.")
+	assert(callATemplate({templateName: 'templateC'}).trim() == 'c', "(2) Selecting a template to call with a data in the object.")
+	</script>
+	
+	<h2>Special Debugging Area</h2>
+	<div id="debugging">
+		
+		
+	
+	</div>
+</body>
+
+</html>
