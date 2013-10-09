@@ -36,7 +36,7 @@ t.parseTemplateScript = function(tx) {
 		}
 		else {
 			if(ctn) {
-				var template = t.addTemplate(ctn, token.content);
+				var template = t.addTemplate(ctn, t.stw(token.content));
 				if(st) {
 					st[ctn] = template;
 				}
@@ -45,6 +45,19 @@ t.parseTemplateScript = function(tx) {
 		}
 	}
 }
+
+/* strip template whitespace */
+t.stw = function(txt) {
+	var i = txt.indexOf('\n');
+	if(i > -1 && txt.substring(0, i).trim() == '') {
+		txt = txt.substring(i + 1);
+	}
+	i = txt.lastIndexOf('\n');
+	if(i > -1 && txt.substring(i).trim() == '') {
+		txt = txt.substring(0, i);
+	}
+	return txt;
+};
 
 t.ActiveElement = function(/* the conditional */cd, data, hd) {
 	/* assign the conditional expression */
@@ -132,6 +145,7 @@ ae.prototype.edse = function(cc) {
 
 /* evaluate in context */
 ae.prototype.eic = function(cc, ex) {
+	cc = cc || {};
 	return this.eicwt.call(cc, cc, ex);
 };
 
