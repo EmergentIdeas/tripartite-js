@@ -1,11 +1,11 @@
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="tripartate-js" default="dist" basedir=".">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="tripartite-js" default="dist" basedir=".">
 	<!-- 
 	
 		Change the follow strings to be specific to your project:
 		
-		com.emergentideas.tripartatejs
+		com/emergentideas/tripartitejs
 		com.emergentideas
-		tripartate-js
+		tripartite-js
 		YOUR DESCRIPTION HERE
 		
 		
@@ -43,7 +43,7 @@
 	
 	
 	<!-- properties that describe the current plugin. CHANGE THESE -->
-	<property name="app.package.root" value="com.emergentideas.tripartatejs" />
+	<property name="app.package.root" value="com/emergentideas/tripartitejs" />
 	<!-- notice the spelling of the property name here as is used by ivy -->
 	<property name="organisation" value="com.emergentideas" />
 	

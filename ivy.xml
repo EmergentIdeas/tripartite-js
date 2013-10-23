@@ -8,7 +8,7 @@
 		
 		Change them to your organization name and the name of this plugin
 	 -->
-    <info organisation="com.emergentideas" module="tripartate-js"/>
+    <info organisation="com.emergentideas" module="tripartite-js"/>
     <configurations defaultconfmapping="build->*;deployment->default;test->default">
     	<conf name="build" />
     	<conf name="deployment" />
@@ -18,8 +18,7 @@
     	<conf name="empty" />
     </configurations>
     <publications>
-    	<artifact name="tripartate-js" type="jar" conf="appdep" />
-    	<artifact name="tripartate-js-sources" type="source" ext="jar" conf="sources"/>
+    	<artifact name="tripartite-js" type="jar" conf="appdep" />
     </publications>
     <dependencies>
     	<dependency org="com.emergentideas" name="webhandle" rev="[1.0.0.8,)" conf="build" />	
